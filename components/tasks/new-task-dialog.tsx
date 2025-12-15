@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
-import { createTask } from "@/app/dashboard/tasks/actions";
+import { createTask } from "@/app/(main)/dashboard/tasks/actions";
 import { useState, useRef } from "react";
 import { toast } from "sonner"; // Assuming sonner or use standard toast logic if available, or just skip toast for MVP if not installed. Use simple alert or nothing for now to minimize deps unless user asked. I'll rely on form action success.
 // Wait, I don't have sonner installed. I'll stick to basic action handling or just close dialog.
