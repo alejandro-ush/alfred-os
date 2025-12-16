@@ -1,4 +1,5 @@
 // app/(main)/dashboard/notes/page.tsx
+
 import { createClient } from "@/utils/supabase/server";
 import { TaskCard } from "@/components/tasks/task-card";
 import { NewTaskDialog } from "@/components/tasks/new-task-dialog";

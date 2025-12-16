@@ -39,12 +39,14 @@ interface NewTaskDialogProps {
     defaultPriority?: string;
     hideDateInput?: boolean;
     label?: string;
+    customTrigger?: React.ReactNode;
 }
 
 export function NewTaskDialog({
     defaultPriority = "routine",
     hideDateInput = false,
     label = "Nueva Tarea",
+    customTrigger,
 }: NewTaskDialogProps) {
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState<Date | undefined>(undefined);
@@ -108,10 +110,14 @@ export function NewTaskDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="gap-2 w-full justify-center">
-                    <Plus className="h-4 w-4" />
-                    {label}
-                </Button>
+                {customTrigger ? (
+                    customTrigger
+                ) : (
+                    <Button className="gap-2 w-full justify-center">
+                        <Plus className="h-4 w-4" />
+                        {label}
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
