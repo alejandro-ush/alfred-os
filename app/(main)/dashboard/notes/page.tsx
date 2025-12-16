@@ -30,7 +30,7 @@ export default async function NotesPage() {
                         Espacio para tus pensamientos y borradores.
                     </p>
                 </div>
-                <div>
+                <div className="hidden lg:block">
                     {/* Botón específico: Pre-selecciona 'Idea' y oculta fecha */}
                     <NewTaskDialog
                         defaultPriority="idea"

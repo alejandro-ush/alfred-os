@@ -50,7 +50,7 @@ export default async function FocusPage() {
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">Focus</h1>
                     <p className="text-muted-foreground text-lg">Tu objetivo principal para hoy.</p>
                 </div>
-                <div className="flex items-center">
+                <div className="hidden lg:flex items-center">
                     <NewTaskDialog label=" Agregar Tarea" />
                 </div>
             </div>

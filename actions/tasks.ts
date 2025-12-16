@@ -12,6 +12,7 @@ const createTaskSchema = z.object({
     priority: z.enum(["idea", "low", "routine", "urgent", "inbox"]), // Ensure routine/inbox are covered
     description: z.string().optional(),
     due_date: z.string().optional().nullable(),
+    category: z.string().optional(), // Added category support
 });
 
 export async function createTask(formData: FormData) {
@@ -31,6 +32,7 @@ export async function createTask(formData: FormData) {
         description: formData.get("description"),
         // Fix: Ensure empty string becomes null for Zod/DB
         due_date: rawDueDate === "" || rawDueDate === "undefined" ? null : rawDueDate,
+        category: formData.get("category"),
     };
 
     const parseResult = createTaskSchema.safeParse(rawData);
@@ -39,13 +41,14 @@ export async function createTask(formData: FormData) {
         return { error: "Invalid data" };
     }
 
-    const { title, priority, description, due_date } = parseResult.data;
+    const { title, priority, description, due_date, category } = parseResult.data;
 
     const { error } = await supabase.from("tasks").insert({
         title,
         priority,
         description: description || null,
         due_date: due_date || null, // Redundant null check but safe
+        category: category || 'general', // Default to general if not provided
         status: 'pending',
         origin: 'app',
         user_id: user.id,

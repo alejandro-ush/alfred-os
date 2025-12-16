@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
 
 export default function MainLayout({
     children,
@@ -21,6 +22,11 @@ export default function MainLayout({
 
             {/* Mobile Navigation */}
             <MobileNav />
+
+            {/* Mobile FAB */}
+            <div className="lg:hidden fixed bottom-20 right-4 z-50 drop-shadow-2xl">
+                <NewTaskDialog label="Tarea" />
+            </div>
         </div>
     );
 }

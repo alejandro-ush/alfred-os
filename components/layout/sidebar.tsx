@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Target, CalendarRange, Brain, User, Settings, LogOut, Trash2, Archive, NotebookPen, LayoutDashboard } from "lucide-react"
+import { Target, CalendarRange, Brain, User, Settings, LogOut, Trash2, Archive, NotebookPen, LayoutDashboard, ShoppingCart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { NewTaskDialog } from "@/components/tasks/new-task-dialog"
 // import { Button } from "@/components/ui/button" // Assuming Button exists or reusing standard styles
@@ -25,6 +25,11 @@ const navItems = [
         title: "Brain",
         href: "/dashboard/brain",
         icon: Brain,
+    },
+    {
+        title: "Shopping",
+        href: "/dashboard/shopping",
+        icon: ShoppingCart,
     },
     {
         title: "Notas",

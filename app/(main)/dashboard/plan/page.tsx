@@ -5,6 +5,19 @@ import { startOfTomorrow, isTomorrow, isSameWeek, addWeeks, format } from "date-
 import { es } from "date-fns/locale";
 import { Task } from "@/types/database";
 
+// Priority weights helper
+const getPriorityWeight = (p: string) => {
+    switch (p) {
+        case 'urgent': return 5;
+        // case 'high': return 4; // Not in standard type but requested flow
+        case 'routine': return 3; // Equivalent to medium/routine
+        case 'low': return 2;
+        case 'inbox': return 1;
+        case 'idea': return 0;
+        default: return 1;
+    }
+};
+
 export default async function PlanPage() {
     const supabase = await createClient();
 
@@ -17,7 +30,7 @@ export default async function PlanPage() {
         .eq("is_deleted", false)
         .eq("status", "pending")
         .gt("due_date", futureDateStart)
-        .order("due_date", { ascending: true });
+        .order("due_date", { ascending: true }); // Primary sort by date from DB
 
     if (error) {
         console.error("Error fetching plan tasks:", error);
@@ -49,6 +62,20 @@ export default async function PlanPage() {
             }
         });
     }
+
+    // Apply Sorting: Priority DESC within each bucket
+    const sortTasks = (taskList: Task[]) => {
+        return taskList.sort((a, b) => {
+            const weightA = getPriorityWeight(a.priority);
+            const weightB = getPriorityWeight(b.priority);
+            return weightB - weightA; // DESC
+        });
+    };
+
+    buckets.tomorrow = sortTasks(buckets.tomorrow);
+    buckets.thisWeek = sortTasks(buckets.thisWeek);
+    buckets.nextWeek = sortTasks(buckets.nextWeek);
+    buckets.later = sortTasks(buckets.later);
 
     const hasTasks = tasks && tasks.length > 0;
 
