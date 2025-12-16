@@ -195,3 +195,33 @@ export async function undoTask(taskId: string) {
     revalidatePath("/dashboard/logbook");
     return { success: true };
 }
+
+export async function searchTasks(query: string) {
+    if (!query || query.length < 2) {
+        return [];
+    }
+
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return [];
+    }
+
+    const { data, error } = await supabase
+        .from("tasks")
+        .select("id, title, status, priority, category, due_date")
+        .eq("is_deleted", false)
+        .eq("user_id", user.id)
+        .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+        .limit(10);
+
+    if (error) {
+        console.error("Error searching tasks:", error);
+        return [];
+    }
+
+    return data;
+}
