@@ -1,3 +1,5 @@
+// app/(main)/dashboard/page.tsx
+
 import { createClient } from "@/utils/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Target, Brain, CalendarDays, CheckCircle2 } from "lucide-react";
