@@ -29,7 +29,7 @@ export interface Task {
     origin: TaskOrigin;
 
     // 📅 Nuevos campos v3.1
-    due_date: string | null; // timestamptz
+    due_date: string | null; // date
     category: string; // text (Ej: work, home, finance)
     estimated_duration: number; // int (minutos)
     is_habit: boolean; // boolean

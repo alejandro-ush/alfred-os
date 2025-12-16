@@ -9,8 +9,9 @@ import { z } from "zod";
 
 const createTaskSchema = z.object({
     title: z.string().min(1, "El título es obligatorio"),
-    priority: z.enum(["idea", "low", "routine", "urgent"]),
+    priority: z.enum(["idea", "low", "routine", "urgent", "inbox"]), // Ensure routine/inbox are covered
     description: z.string().optional(),
+    due_date: z.string().optional().nullable(),
 });
 
 export async function createTask(formData: FormData) {
@@ -23,10 +24,13 @@ export async function createTask(formData: FormData) {
         redirect("/login");
     }
 
+    const rawDueDate = formData.get("due_date") as string;
     const rawData = {
         title: formData.get("title"),
         priority: formData.get("priority"),
         description: formData.get("description"),
+        // Fix: Ensure empty string becomes null for Zod/DB
+        due_date: rawDueDate === "" || rawDueDate === "undefined" ? null : rawDueDate,
     };
 
     const parseResult = createTaskSchema.safeParse(rawData);
@@ -35,12 +39,13 @@ export async function createTask(formData: FormData) {
         return { error: "Invalid data" };
     }
 
-    const { title, priority, description } = parseResult.data;
+    const { title, priority, description, due_date } = parseResult.data;
 
     const { error } = await supabase.from("tasks").insert({
         title,
         priority,
         description: description || null,
+        due_date: due_date || null, // Redundant null check but safe
         status: 'pending',
         origin: 'app',
         user_id: user.id,
@@ -131,5 +136,59 @@ export async function restoreTask(taskId: string) {
 
     revalidatePath("/dashboard/focus");
     revalidatePath("/dashboard/trash");
+    return { success: true };
+}
+
+export async function deleteTaskPermanently(taskId: string) {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        redirect("/login");
+    }
+
+    const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .eq('id', taskId)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error("Error permanently deleting task:", error);
+        return { error: error.message };
+    }
+
+    revalidatePath("/dashboard/trash");
+    return { success: true };
+}
+
+export async function undoTask(taskId: string) {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        redirect("/login");
+    }
+
+    const { error } = await supabase
+        .from("tasks")
+        .update({ status: 'pending' })
+        .eq('id', taskId)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error("Error undoing task:", error);
+        return { error: error.message };
+    }
+
+    // Revalidate relevant paths where the task might reappear
+    revalidatePath("/dashboard/focus");
+    revalidatePath("/dashboard/plan");
+    revalidatePath("/dashboard/brain");
+    revalidatePath("/dashboard/logbook");
     return { success: true };
 }

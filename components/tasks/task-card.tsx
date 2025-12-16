@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,13 +16,14 @@ import {
     SheetTrigger,
     SheetFooter,
 } from "@/components/ui/sheet";
-import { completeTask, deleteTask, restoreTask } from "@/actions/tasks";
+import { completeTask, deleteTask, restoreTask, deleteTaskPermanently, undoTask } from "@/actions/tasks";
 import { toast } from "sonner";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface TaskCardProps {
     task: Task;
+    isTrashView?: boolean;
 }
 
 const priorityConfig: Record<string, { label: string }> = {
@@ -33,12 +34,14 @@ const priorityConfig: Record<string, { label: string }> = {
     idea: { label: "💡 Idea" },
 };
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ task, isTrashView = false }: TaskCardProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
-    // Determines if we are in "Trash Mode" based on task status
-    const isTrash = task.is_deleted;
+    // Determines if we are in "Trash Mode" logic
+    // If isTrashView is true, we treat it as trash regardless of is_deleted (though it should be deleted)
+    // If task.is_deleted is true, it's also trash
+    const isTrash = task.is_deleted || isTrashView;
 
     // Fallback for custom or unknown priorities
     const priorityLabel = priorityConfig[task.priority]?.label || `🔘 ${task.priority}`;
@@ -59,14 +62,32 @@ export function TaskCard({ task }: TaskCardProps) {
     };
 
     const handleDelete = async () => {
-        if (!confirm("¿Estás seguro de que quieres eliminar esta tarea?")) return;
+        if (!confirm(isTrash
+            ? "¿Estás seguro de que quieres borrarla definitivamente? No se puede deshacer."
+            : "¿Estás seguro de que quieres eliminar esta tarea?")) return;
 
         setIsLoading(true);
-        const result = await deleteTask(task.id);
+        // Dispatch to correct action based on state
+        const result = isTrash
+            ? await deleteTaskPermanently(task.id)
+            : await deleteTask(task.id);
+
         if (result.error) {
             toast.error("Error al eliminar la tarea");
         } else {
-            toast.success("Tarea eliminada");
+            toast.success(isTrash ? "Tarea borrada definitivamente" : "Tarea eliminada");
+            setIsOpen(false);
+        }
+        setIsLoading(false);
+    };
+
+    const handleUndo = async () => {
+        setIsLoading(true);
+        const result = await undoTask(task.id);
+        if (result.error) {
+            toast.error("Error al deshacer la tarea");
+        } else {
+            toast.success("Tarea regresada a pendientes");
             setIsOpen(false);
         }
         setIsLoading(false);
@@ -201,20 +222,31 @@ export function TaskCard({ task }: TaskCardProps) {
                 {/* 3. Footer de Acciones */}
                 <SheetFooter className="p-6 border-t mt-auto bg-background/50 backdrop-blur-sm">
                     <div className="flex w-full items-center gap-4 sm:justify-between">
-                        {isTrash ? (
-                            // Acciones de Papelera
-                            <Button
-                                className="flex-1 gap-2"
-                                size="lg"
-                                variant="default" // Primary style for Restore
-                                onClick={handleRestore}
-                                disabled={isLoading}
-                            >
-                                <Undo2 className="h-5 w-5" />
-                                {isLoading ? "Restaurando..." : "Restaurar Tarea"}
-                            </Button>
+                        {isTrashView ? (
+                            // Acciones de Papelera (Hard Delete / Restore) - SOLO si isTrashView es true
+                            <>
+                                <Button
+                                    variant="destructive"
+                                    className="gap-2"
+                                    onClick={handleDelete}
+                                    disabled={isLoading}
+                                >
+                                    <Trash2 className="h-5 w-5" />
+                                    Borrar Definitivamente
+                                </Button>
+                                <Button
+                                    className="flex-1 gap-2"
+                                    size="lg"
+                                    variant="outline"
+                                    onClick={handleRestore}
+                                    disabled={isLoading}
+                                >
+                                    <Undo2 className="h-5 w-5" />
+                                    {isLoading ? "Restaurando..." : "Restaurar"}
+                                </Button>
+                            </>
                         ) : (
-                            // Acciones Normales (Activas)
+                            // Acciones Normales
                             <>
                                 <Button
                                     variant="ghost"
@@ -226,15 +258,28 @@ export function TaskCard({ task }: TaskCardProps) {
                                     <Trash2 className="h-5 w-5" />
                                     <span className="sr-only">Eliminar</span>
                                 </Button>
-                                <Button
-                                    className="flex-1 gap-2"
-                                    size="lg"
-                                    onClick={handleComplete}
-                                    disabled={isLoading || task.status === 'completed'}
-                                >
-                                    <CheckCircle2 className="h-5 w-5" />
-                                    {isLoading ? "Procesando..." : "Marcar Completada"}
-                                </Button>
+                                {task.status === 'completed' ? (
+                                    <Button
+                                        className="flex-1 gap-2"
+                                        size="lg"
+                                        variant="outline"
+                                        onClick={handleUndo}
+                                        disabled={isLoading}
+                                    >
+                                        <Undo2 className="h-5 w-5" />
+                                        {isLoading ? "Procesando..." : "Deshacer"}
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="flex-1 gap-2"
+                                        size="lg"
+                                        onClick={handleComplete}
+                                        disabled={isLoading || task.status === 'completed'}
+                                    >
+                                        <CheckCircle2 className="h-5 w-5" />
+                                        {isLoading ? "Procesando..." : "Marcar Completada"}
+                                    </Button>
+                                )}
                             </>
                         )}
                     </div>

@@ -1,3 +1,5 @@
+//app/(main)/dashboard/focus/page.tsx
+
 import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
 import { TaskCard } from "@/components/tasks/task-card";
 import { createClient } from "@/utils/supabase/server";
@@ -14,12 +16,28 @@ export default async function FocusPage() {
         redirect("/login");
     }
 
+    // Logic v4: Focus
+    // - status: pending
+    // - is_deleted: false
+    // - Filter: priority = 'urgent' OR due_date <= TODAY (End of Day)
+    const today = new Date();
+    // Set to end of day in local time/server time to include tasks due today
+
+    // ISO string for comparison. Supabase timestamptz comparison works best with ISO.
+    // However, JS `new Date()` is UTC in many server envs, but here we are local.
+    // Let's use `endOfDay` logic but simplistic for ISO string:
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    const todayISO = endOfToday.toISOString();
+
     const { data: tasks, error } = await supabase
         .from("tasks")
         .select("*")
         .eq("status", "pending")
-        .eq('is_deleted', false)
-        .order("created_at", { ascending: false });
+        .eq("is_deleted", false)
+        .lte("due_date", todayISO)
+        .order("priority", { ascending: false }) // Urgent first
+        .order("due_date", { ascending: true }); // Then by date
 
     if (error) {
         console.error("Error fetching tasks:", error);
@@ -27,12 +45,14 @@ export default async function FocusPage() {
 
     return (
         <div className="flex flex-col gap-6 h-full">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Focus</h1>
-                    <p className="text-muted-foreground">Tu objetivo principal para hoy.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Focus</h1>
+                    <p className="text-muted-foreground text-lg">Tu objetivo principal para hoy.</p>
                 </div>
-                <NewTaskDialog />
+                <div className="flex items-center">
+                    <NewTaskDialog label=" Agregar Tarea" />
+                </div>
             </div>
 
             {tasks && tasks.length > 0 ? (
@@ -44,10 +64,11 @@ export default async function FocusPage() {
             ) : (
                 <div className="flex-1 rounded-lg border border-dashed shadow-sm flex items-center justify-center bg-card text-card-foreground p-12">
                     <div className="text-center space-y-2">
-                        <p className="text-muted-foreground">No tienes tareas pendientes. ¡Estás al día!</p>
+                        <p className="text-muted-foreground text-lg">¡Todo limpio! No tienes tareas pendientes hoy 🎉</p>
                     </div>
                 </div>
             )}
+
         </div>
     );
 }

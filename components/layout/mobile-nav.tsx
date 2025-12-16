@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Target, CalendarRange, Brain, User, Trash2 } from "lucide-react"
+import { Target, CalendarRange, Brain, User, Trash2, Archive } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -19,13 +19,18 @@ const navItems = [
         icon: Brain,
     },
     {
+        title: "Logbook",
+        href: "/dashboard/logbook",
+        icon: Archive,
+    },
+    {
         title: "Trash",
         href: "/dashboard/trash",
         icon: Trash2,
     },
     {
         title: "Profile",
-        href: "/profile",
+        href: "/dashboard/profile",
         icon: User,
     },
 ]

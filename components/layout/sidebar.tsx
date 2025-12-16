@@ -1,10 +1,16 @@
 import Link from "next/link"
-import { Target, CalendarRange, Brain, User, Settings, LogOut, Trash2 } from "lucide-react"
+import { Target, CalendarRange, Brain, User, Settings, LogOut, Trash2, Archive, NotebookPen, LayoutDashboard } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { NewTaskDialog } from "@/components/tasks/new-task-dialog"
 // import { Button } from "@/components/ui/button" // Assuming Button exists or reusing standard styles
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar" // Assuming Avatar exists
 
 const navItems = [
+    {
+        title: "Dashboard",
+        href: "/dashboard",
+        icon: LayoutDashboard,
+    },
     {
         title: "Focus",
         href: "/dashboard/focus",
@@ -21,13 +27,23 @@ const navItems = [
         icon: Brain,
     },
     {
+        title: "Notas",
+        href: "/dashboard/notes",
+        icon: NotebookPen,
+    },
+    {
+        title: "Logbook",
+        href: "/dashboard/logbook",
+        icon: Archive,
+    },
+    {
         title: "Profile",
-        href: "/profile",
+        href: "/dashboard/profile",
         icon: User,
     },
     {
         title: "Settings",
-        href: "/settings",
+        href: "/dashboard/settings",
         icon: Settings,
     },
     {
@@ -49,7 +65,7 @@ export function Sidebar() {
                 </h1>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-6 px-4">
+            <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col">
                 <nav className="flex flex-col gap-2">
                     {navItems.map((item) => (
                         <Link
@@ -66,6 +82,9 @@ export function Sidebar() {
                         </Link>
                     ))}
                 </nav>
+                <div className="mt-auto pt-6">
+                    <NewTaskDialog label=" Agregar Tarea" />
+                </div>
             </div>
 
             <div className="p-4 border-t border-sidebar-border">

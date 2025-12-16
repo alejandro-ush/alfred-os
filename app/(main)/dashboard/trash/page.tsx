@@ -46,7 +46,7 @@ export default async function TrashPage() {
                 {tasks && tasks.length > 0 ? (
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {tasks.map((task) => (
-                            <TaskCard key={task.id} task={task} />
+                            <TaskCard key={task.id} task={task} isTrashView={true} />
                         ))}
                     </div>
                 ) : (
