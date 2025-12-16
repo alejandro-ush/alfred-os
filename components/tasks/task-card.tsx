@@ -274,7 +274,7 @@ export function TaskCard({ task, isTrashView = false }: TaskCardProps) {
                                         className="flex-1 gap-2"
                                         size="lg"
                                         onClick={handleComplete}
-                                        disabled={isLoading || task.status === 'completed'}
+                                        disabled={isLoading || (task.status as TaskStatus) === 'completed'}
                                     >
                                         <CheckCircle2 className="h-5 w-5" />
                                         {isLoading ? "Procesando..." : "Marcar Completada"}
