@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Task } from "@/types/database";
+import { Task, TaskStatus } from "@/types/database";
 import { CalendarIcon, Tag, Flag, CheckCircle2, Trash2, Circle, Undo2 } from "lucide-react";
 import { format, isBefore, startOfDay } from "date-fns";
 import { es } from "date-fns/locale";
